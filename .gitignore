@@ -1,0 +1,53 @@
+
+# ==========================
+# GitHub Pages / Static Web
+# ==========================
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Cache / temporary
+*.cache
+*.tmp
+
+# ==========================
+# GitHub Pages with Jekyll
+# (GitHub Pages usa Jekyll
+# anche se tu non lo usi)
+# ==========================
+
+# Cartelle generate da Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# ==========================
+# Node (solo se usi NPM, Sass,
+# Tailwind, Vite, Webpack ecc.)
+# ==========================
+
+node_modules/
+dist/
+build/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================
+# Ruby (solo se usi Jekyll localmente)
+# ==========================
+
+.bundle/
+vendor/
