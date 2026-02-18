@@ -1,0 +1,157 @@
+openapi: "3.1.0"
+info:
+  version: "1.1"
+  title: "Roomcloud Authentication API OpenApi definition"
+  x-last-updated: "2026-02-18"
+servers:
+  - url: "https://authentication.g.roomcloud.net"
+    description: "Production"
+  - url: "https://api-test-02.g.roomcloud.net"
+    description: "Development server"
+
+paths:
+
+  /authenticator/api/oauth/authenticate:
+    post:
+      summary: when sucesfully authenticated, the response contains a JWT token to be used as a Bearer token in the Authorization header for all API requests.
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              type: object
+              properties:
+                CLIENT_ID:
+                  type: string
+                  required: true
+                CLIENT_SECRET:
+                  type: string
+                  required: true
+   
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/authentication.yaml#/AuthenticationSuccess"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      tags:
+        - authentication
+  /authenticator/api/clients/secret:
+    put:
+      summary: when sucesfully authenticated, the response contains a JWT token to be used as a Bearer token in the Authorization header for all API requests.
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              type: object
+              properties:
+                CLIENT_SECRET_CURRENT:
+                  type: string
+                  required: true
+                CLIENT_SECRET_NEW:
+                  type: string
+                  minLength: 12 
+                  pattern: "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*+_()\\-]).{12,}$"
+                  description: |
+                    The new client_secret must satisfy the following rules:
+                      • Minimum 12 characters  
+                      • At least one digit  
+                      • At least one lowercase letter  
+                      • At least one uppercase letter  
+                      • At least one special character: ! @ # $ % ^ & * + _ ( ) -  
+                      • Must be different from the last 3 used  
+                  example: "Abcdef12#XYZ"
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/authentication.yaml#/AuthenticationSuccess"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      tags:
+        - secrets
+      security:
+        - JWTAuth: []
+components:
+  securitySchemes:
+    JWTAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+# Commons (Error, ErrorRS, Timestamp, Paging, Base Response Envelopes)
+    Error:
+      $ref: "./schemas/commons.yaml#/Error"
+
+    Timestamp:
+      $ref: "./schemas/commons.yaml#/Timestamp"
+
+    OpenApiResponseSuccessBase:
+      $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
+
+    ResponseError:
+      $ref: "./schemas/commons.yaml#/ResponseError"
+    
+    

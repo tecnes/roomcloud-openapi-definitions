@@ -1,0 +1,21 @@
+# schemas/authentication.yaml
+
+# -------- Envelope CONCRETO per Authentication (success) --------
+AuthenticationSuccess:
+  allOf:
+    - $ref: "./commons.yaml#/OpenApiResponseSuccessBase"
+    - type: object
+      properties:
+        payload:
+          type: object
+          properties:
+            jwttoken:
+              type: string
+            expirationTime:
+              type: integer
+              format: int64
+              description: |
+                Unix timestamp (seconds since epoch).
+              example: 1711142400
+      required: [payload]
+      additionalProperties: false

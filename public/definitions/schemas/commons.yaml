@@ -1,0 +1,85 @@
+#  securitySchemes/commons.yaml
+JWTAuth:
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+
+# schemas/commons.yaml
+
+Error:
+  type: object
+  properties:
+    message:
+      type: string
+      nullable: false
+    code:
+      type: string
+      nullable: false
+    timestamp:
+      type: string
+      format: date-time
+      nullable: false
+
+Timestamp:
+  type: string
+  format: date-time
+
+OpenApiPaging:
+  type: object
+  description: Paging information as serialized by OpenApiPaging.java
+  properties:
+    total_count:
+      type: integer
+    limit:
+      type: integer
+    next_cursor:
+      type: string
+  additionalProperties: false
+  # Deriva dai campi visti in OpenApiPaging.java
+  # total_count, limit, next_cursor [2](https://tecnesmilano-my.sharepoint.com/personal/l_sergi_tecnes_com/Documents/Microsoft%20Copilot%20Chat%20Files/OpenApiPaging.java)
+
+OpenApiResponseSuccessBase:
+  type: object
+  description: Base envelope fields for successful responses (no payload yet).
+  properties:
+    success:
+      type: boolean
+      enum: [true]
+    uuid:
+      type: string
+    timestamp:
+      $ref: '#/Timestamp'
+    warnings:
+      type: array
+      nullable: true
+      items:
+        $ref: '#/Error'
+    paging:
+      $ref: '#/OpenApiPaging'
+  required: [success, uuid, timestamp]
+  additionalProperties: false
+  # I campi e la semantica derivano da OpenApiResponse.java (status è @JsonIgnore) [1](https://tecnesmilano-my.sharepoint.com/personal/l_sergi_tecnes_com/Documents/Microsoft%20Copilot%20Chat%20Files/OpenApiResponse.java)
+
+ResponseError:
+  type: object
+  description: Envelope for error responses (no payload).
+  properties:
+    success:
+      type: boolean
+      enum: [false]
+    uuid:
+      type: string
+    timestamp:
+      $ref: '#/Timestamp'
+    errors:
+      type: array
+      items:
+        $ref: '#/Error'
+    warnings:
+      type: array
+      nullable: true
+      items:
+        $ref: '#/Error'
+  required: [success, uuid, timestamp, errors]
+  additionalProperties: false
+  # In errore il payload è assente per contratto (OpenApiResponse.java) [1](https://tecnesmilano-my.sharepoint.com/personal/l_sergi_tecnes_com/Documents/Microsoft%20Copilot%20Chat%20Files/OpenApiResponse.java)

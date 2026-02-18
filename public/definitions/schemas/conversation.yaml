@@ -1,0 +1,125 @@
+# schemas/conversation.yaml
+
+ConversationList:
+  type: object
+  properties:
+    conversations:
+      type: array
+      items:
+        $ref: '#/Conversation'
+  required: [conversations]
+  additionalProperties: false
+  # Corrisponde al payload visto in rs.json: { "conversations": [ ... ] } [2](https://tecnesmilano-my.sharepoint.com/personal/l_sergi_tecnes_com/Documents/Microsoft%20Copilot%20Chat%20Files/OpenApiPaging.java)
+
+Conversation:
+  type: object
+  properties:
+    conversation_id:
+      type: string
+    channel_conversation_id:
+      type: string
+    channel_id:
+      type: string
+    reservation:
+      $ref: '#/Reservation'
+    status:
+      type: string
+    business_purpose:
+      type: string
+    no_reply_needed:
+      type: boolean
+    dlm:
+      type: string
+      format: date-time
+    start_date:
+      type: string
+      format: date-time
+    messages:
+      type: array
+      items:
+        $ref: '#/Message'
+  required: [conversation_id, channel_id]
+  additionalProperties: false
+
+Message:
+  type: object
+  properties:
+    message_id:
+      type: string
+    creation_date:
+      type: string
+      format: date-time
+    text:
+      type: string
+      nullable: true
+    participant:
+      $ref: '#/Participant'
+    attachments:
+      type: array
+      nullable: true
+      items:
+        $ref: '#/Attachment'
+  required: [message_id, creation_date, participant]
+  additionalProperties: false
+
+Participant:
+  type: object
+  properties:
+    participant_id:
+      type: string
+  required: [participant_id]
+  additionalProperties: false
+
+Attachment:
+  type: object
+  properties:
+    attachment_id:
+      type: string
+    file_size:
+      type: integer
+    file_content:
+      type: string
+      description: Base64 encoded file content
+  required: [attachment_id, file_size]
+  additionalProperties: false
+
+Reservation:
+  type: object
+  properties:
+    reservation_id:
+      type: string
+    checkin:
+      type: string
+      format: date
+    checkout:
+      type: string
+      format: date
+    adults:
+      type: integer
+    units:
+      type: array
+      items:
+        $ref: '#/Unit'
+  required: [reservation_id, checkin, checkout]
+  additionalProperties: false
+
+Unit:
+  type: object
+  properties:
+    unit_id:
+      type: string
+    unit_name:
+      type: string
+  required: [unit_id, unit_name]
+  additionalProperties: false
+
+# -------- Envelope CONCRETO per Messaging (success) --------
+MessagingSuccess:
+  allOf:
+    - $ref: "./commons.yaml#/OpenApiResponseSuccessBase"
+    - type: object
+      properties:
+        payload:
+          $ref: '#/ConversationList'
+      required: [payload]
+      additionalProperties: false
