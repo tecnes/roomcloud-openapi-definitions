@@ -54,11 +54,18 @@ OpenApiResponseSuccessBase:
       nullable: true
       items:
         $ref: '#/Error'
-    paging:
-      $ref: '#/OpenApiPaging'
   required: [success, uuid, timestamp]
   additionalProperties: false
   # I campi e la semantica derivano da OpenApiResponse.java (status è @JsonIgnore) [1](https://tecnesmilano-my.sharepoint.com/personal/l_sergi_tecnes_com/Documents/Microsoft%20Copilot%20Chat%20Files/OpenApiResponse.java)
+
+OpenApiResponseSuccessBaseWithPaging:
+  type: object
+  description: Base envelope fields for successful responses with paging (no payload yet).
+  allOf:
+    - $ref: "#/OpenApiResponseSuccessBase"
+    - paging:
+        $ref: '#/OpenApiPaging'
+  additionalProperties: false
 
 ResponseError:
   type: object

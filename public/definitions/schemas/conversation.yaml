@@ -123,3 +123,47 @@ MessagingSuccess:
           $ref: '#/ConversationList'
       required: [payload]
       additionalProperties: false
+
+
+MessageReplyRequest:
+  type: object
+  required: [message]
+  properties:
+    message:
+      $ref: '#/ReplyMessagePayload'
+
+ReplyMessagePayload:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Free text of the reply
+          maxLength: 10000
+        attachment:
+          $ref: '#/SingleAttachment'
+      required:
+        - text
+      description: Either text-only or text with a single attachment.
+
+SingleAttachment:
+      type: object
+      required:
+        - file_name
+        - file_content
+        - file_type
+      properties:
+        file_name:
+          type: string
+          description: Original filename (no path)
+          maxLength: 255
+        file_content:
+          type: string
+          format: byte
+          description: Base64-encoded file content
+        file_type:
+          type: string
+          description: MIME type of the file
+          enum:
+            - image/png
+            - image/jpeg
+

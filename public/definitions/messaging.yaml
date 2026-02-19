@@ -13,7 +13,8 @@ servers:
 paths:
   /be/api/messaging/{account_id}:
     get:
-      summary: read_test
+      summary: read messages
+      operationId: conversationsRead
       parameters:
         - name: account_id
           in: path
@@ -75,10 +76,88 @@ paths:
               schema:
                 $ref: "./schemas/commons.yaml#/ResponseError"
       tags:
-        - messaging
+        - Messaging
       security:
         - JWTAuth: []
-
+  /be/api/messaging/{account_id}/{conversation_id}/reply:
+    post:
+      summary: Reply to a conversation with a new message
+      operationId: replyMessage
+      tags:
+        - Messaging
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account identifier
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Conversation identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas/conversation.yaml#/MessageReplyRequest'
+            examples:
+              simpleText:
+                summary: Text-only reply
+                value:
+                  message:
+                    text: "my text"
+              withAttachment:
+                summary: Text + single attachment (base64)
+                value:
+                  message:
+                    text: "my text"
+                    attachment:
+                      file_name: "my_file.png"
+                      file_content: "iVBORw0KGgoAAAANSUhEUgAA..."  # base64
+                      file_type: "image/png"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      security:
+          - JWTAuth: []
 components:
   securitySchemes:
     JWTAuth:
@@ -98,6 +177,9 @@ components:
 
     OpenApiResponseSuccessBase:
       $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
+
+    OpenApiResponseSuccessBaseWithPaging:
+      $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBaseWithPaging"
 
     ResponseError:
       $ref: "./schemas/commons.yaml#/ResponseError"
