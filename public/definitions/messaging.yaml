@@ -211,6 +211,191 @@ paths:
       security:
           - JWTAuth: []
 
+
+  /be/api/messaging/webhooks:
+    post:
+          summary: Registra un nuovo webhook
+          operationId: registerWebhook
+          description: >
+            Registra un webhook per ricevere eventi di messaggistica. Il server invierà POST al `callbackUrl`
+            per gli `eventTypes` selezionati. È possibile impostare un `secret` (consigliato) per la firma HMAC.
+          tags: [Webhooks]
+          security:
+            - OAuth2: [webhooks.write]
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/WebhookCreateRequest'
+          responses:
+            '201':
+              description: Webhook creato
+              headers:
+                Location:
+                  description: URL della risorsa webhook creata
+                  schema: { type: string, format: uri }
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Webhook'
+            '400':
+              description: Dati non validi
+            '401':
+              description: Non autenticato
+            '403':
+              description: Non autorizzato
+            '409':
+              description: Webhook duplicato per lo stesso callbackUrl+eventTypes (usa Idempotency-Key per prevenire)
+          callbacks:
+            onMessageEvents:
+              # useremo il callbackUrl passato nella richiesta
+              '{$request.body#/callbackUrl}':
+                post:
+                  summary: Notifica evento di messaggistica al webhook registrato
+                  description: >
+                    Il server invia una notifica quando si verifica uno degli eventTypes registrati.
+                    La richiesta è firmata (HMAC SHA-256) con il secret associato al webhook.
+                  operationId: messageEventCallback
+                  requestBody:
+                    required: true
+                    content:
+                      application/json:
+                        schema:
+                          $ref: '#/components/schemas/WebhookEventEnvelope'
+                        examples:
+                          messageCreated:
+                            $ref: '#/components/examples/ExMessageCreatedEvent'
+                  headers:
+                    Webhook-Id:
+                      schema: { type: string, format: uuid }
+                      description: Identificatore univoco della consegna
+                    Webhook-Timestamp:
+                      schema: { type: string, format: date-time }
+                      description: Timestamp ISO8601 della creazione dell'evento
+                    Webhook-Signature:
+                      schema: { type: string }
+                      description: >
+                        Firma HMAC SHA-256 del payload (o di `timestamp.payload`) con il secret condiviso.
+                        Formato consigliato: `t={unix}, v1={hexdigest}`
+                    Webhook-Attempt:
+                      schema: { type: integer, minimum: 1 }
+                      description: Numero del tentativo di consegna (1 = primo invio)
+                  responses:
+                    '200':
+                      description: Ricevuto. Nessun contenuto richiesto nel body.
+                    '204':
+                      description: Ricevuto. Nessun contenuto.
+                    '410':
+                      description: Webhook non più valido (server interromperà i retry)
+                    '429':
+                      description: Rate limited (il server riproverà più tardi)
+                    '5XX':
+                      description: Errore del consumer (il server effettuerà retry secondo la policy)
+    get:
+      summary: Elenca i webhook registrati
+      operationId: listWebhooks
+      tags: [Webhooks]
+      security:
+        - OAuth2: [webhooks.read]
+      parameters:
+        - in: query
+          name: eventType
+          schema: { type: string }
+          description: Filtra per tipo di evento
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Webhook' }
+                  nextPageToken:
+                    type: string
+  /be/api/messaging/webhooks/{webhookId}:
+        get:
+          summary: Dettaglio di un webhook
+          operationId: getWebhook
+          tags: [Webhooks]
+          security:
+            - OAuth2: [webhooks.read]
+          parameters:
+            - $ref: '#/components/parameters/WebhookId'
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema: { $ref: '#/components/schemas/Webhook' }
+            '404':
+              description: Non trovato
+
+        patch:
+          summary: Aggiorna un webhook
+          operationId: updateWebhook
+          tags: [Webhooks]
+          security:
+            - OAuth2: [webhooks.write]
+          parameters:
+            - $ref: '#/components/parameters/WebhookId'
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/WebhookUpdateRequest' }
+          responses:
+            '200':
+              description: Aggiornato
+              content:
+                application/json:
+                  schema: { $ref: '#/components/schemas/Webhook' }
+            '404':
+              description: Non trovato
+
+        delete:
+          summary: Cancella un webhook
+          operationId: deleteWebhook
+          tags: [Webhooks]
+          security:
+            - OAuth2: [webhooks.write]
+          parameters:
+            - $ref: '#/components/parameters/WebhookId'
+          responses:
+            '204':
+              description: Cancellato
+            '404':
+              description: Non trovato
+
+  /be/api/messaging/webhooks/{webhookId}/test:
+        post:
+          summary: Invia un evento di test al webhook
+          operationId: testWebhook
+          tags: [Webhooks]
+          security:
+            - OAuth2: [webhooks.write]
+          parameters:
+            - $ref: '#/components/parameters/WebhookId'
+          requestBody:
+            required: false
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    eventType:
+                      $ref: '#/components/schemas/EventType'
+                    payloadOverride:
+                      type: object
+                      additionalProperties: true
+          responses:
+            '202':
+              description: Test programmato per l’invio
+            '404':
+              description: Non trovato
     
 components:
   securitySchemes:
@@ -257,3 +442,207 @@ components:
     Unit:
       $ref: "./schemas/conversation.yaml#/Unit"
       components:
+
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.roomcloud.example/oauth/token
+          scopes:
+            webhooks.read: Lettura dei webhook
+            webhooks.write: Gestione dei webhook
+
+  parameters:
+    WebhookId:
+      name: webhookId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+
+    EventType:
+      type: string
+      description: Tipi di eventi disponibili per Messaging
+      enum:
+        - message.created
+        - message.updated
+        - message.deleted
+        - conversation.created
+        - conversation.updated
+
+    WebhookCreateRequest:
+      type: object
+      required: [callbackUrl, eventTypes]
+      properties:
+        callbackUrl:
+          type: string
+          format: uri
+          description: Endpoint HTTPS del consumer
+        secret:
+          type: string
+          minLength: 16
+          description: >
+            Secret condiviso usato per firmare i webhook (HMAC SHA-256).
+            Se omesso, il sistema ne genera uno.
+        description:
+          type: string
+          maxLength: 256
+        active:
+          type: boolean
+          default: true
+        filter:
+          type: object
+          additionalProperties: true
+          description: >
+            Filtri opzionali (es. conversationId, hotelId) per ridurre gli eventi.
+      additionalProperties: false
+
+    WebhookUpdateRequest:
+      type: object
+      properties:
+        eventTypes:
+          type: array
+          items: { $ref: '#/components/schemas/EventType' }
+          minItems: 1
+        callbackUrl:
+          type: string
+          format: uri
+        secret:
+          type: string
+          minLength: 16
+        description:
+          type: string
+          maxLength: 256
+        active:
+          type: boolean
+        filter:
+          type: object
+          additionalProperties: true
+      additionalProperties: false
+
+    Webhook:
+      type: object
+      required: [id, callbackUrl, eventTypes, active, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        callbackUrl:
+          type: string
+          format: uri
+        eventTypes:
+          type: array
+          items: { $ref: '#/components/schemas/EventType' }
+        description:
+          type: string
+        active:
+          type: boolean
+        filter:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        # Non esporre mai il secret in chiaro nelle GET
+      additionalProperties: false
+
+    # Busta inviata al consumer del webhook
+    WebhookEventEnvelope:
+      type: object
+      required: [id, type, createdAt, data]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID dell'evento (immutabile)
+        type:
+          $ref: '#/components/schemas/EventType'
+        createdAt:
+          type: string
+          format: date-time
+        attempt:
+          type: integer
+          minimum: 1
+          description: Numero tentativo di consegna corrente
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/MessageCreated'
+            - $ref: '#/components/schemas/MessageUpdated'
+            - $ref: '#/components/schemas/MessageDeleted'
+            - $ref: '#/components/schemas/ConversationCreated'
+            - $ref: '#/components/schemas/ConversationUpdated'
+      additionalProperties: false
+
+    # Esempi di payload (adatta ai tuoi modelli messaging reali)
+    MessageCreated:
+      type: object
+      required: [messageId, conversationId, sentAt, sender, content]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        conversationId:
+          type: string
+          format: uuid
+        sentAt:
+          type: string
+          format: date-time  # ISO8601, conforme a tua preferenza yyyy-MM-dd'T'HH:mm:ss'Z'
+        sender:
+          type: string
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              mimeType: { type: string }
+              url: { type: string, format: uri }
+    MessageUpdated:
+      type: object
+      properties:
+        messageId: { type: string, format: uuid }
+        updatedAt: { type: string, format: date-time }
+        fieldsChanged:
+          type: array
+          items: { type: string }
+    MessageDeleted:
+      type: object
+      properties:
+        messageId: { type: string, format: uuid }
+        deletedAt: { type: string, format: date-time }
+    ConversationCreated:
+      type: object
+      properties:
+        conversationId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+    ConversationUpdated:
+      type: object
+      properties:
+        conversationId: { type: string, format: uuid }
+        updatedAt: { type: string, format: date-time }
+        fieldsChanged:
+          type: array
+          items: { type: string }
+
+  examples:
+    ExMessageCreatedEvent:
+      summary: Esempio evento message.created
+      value:
+        id: "8a8b1b2c-6d35-4e4a-b0a2-3d9df4a0f9a1"
+        type: "message.created"
+        createdAt: "2026-02-20T08:20:15Z"
+        attempt: 1
+        data:
+          messageId: "7d6a9f3d-1b2c-4e5f-8a9b-0c1d2e3f4a5b"
+          conversationId: "0d1c2b3a-4e5f-6a7b-8c9d-0e1f2a3b4c5d"
+          sentAt: "2026-02-20T08:20:15Z"
+          sender: "guest"
+          content: "Hello, I have a question about my booking."
+          attachments: []
