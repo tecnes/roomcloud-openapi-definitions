@@ -114,7 +114,7 @@ Unit:
   additionalProperties: false
 
 # -------- Envelope CONCRETO per Messaging (success) --------
-MessagingSuccess:
+ConversationsListRS:
   allOf:
     - $ref: "./commons.yaml#/OpenApiResponseSuccessBase"
     - type: object
@@ -124,7 +124,18 @@ MessagingSuccess:
       required: [payload]
       additionalProperties: false
 
-
+ConversationRS:
+  allOf:
+    - $ref: "./commons.yaml#/OpenApiResponseSuccessBase"
+    - type: object
+      properties:
+        payload:
+          type: object
+          properties:
+            conversation:
+              $ref: '#/Conversation'
+      required: [payload]
+      additionalProperties: false
 MessageReplyRequest:
   type: object
   required: [message]
@@ -141,9 +152,10 @@ ReplyMessagePayload:
           maxLength: 10000
         attachment:
           $ref: '#/SingleAttachment'
-      required:
-        - text
-      description: Either text-only or text with a single attachment.
+        anyOf:
+        - required: [text]
+        - required: [attachment]
+      description: Either text-only or text with a single attachment or simply a single attachment.
 
 SingleAttachment:
       type: object
