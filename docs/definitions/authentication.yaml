@@ -1,8 +1,8 @@
 openapi: "3.1.0"
 info:
-  version: "1.1"
+  version: "1.1.1"
   title: "Roomcloud Authentication API OpenApi definition"
-  x-last-updated: "2026-02-18"
+  x-last-updated: "2026-02-20"
 servers:
   - url: "https://authentication.g.roomcloud.net"
     description: "Production"
@@ -68,7 +68,7 @@ paths:
         - authentication
   /authenticator/api/clients/secret:
     put:
-      summary: when sucesfully authenticated, the response contains a JWT token to be used as a Bearer token in the Authorization header for all API requests.
+      summary: change secret request.
       requestBody:
         content: 
           application/json:
@@ -98,7 +98,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./schemas/authentication.yaml#/AuthenticationSuccess"
+                $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
         "400":
           description: Bad Request
           content:
