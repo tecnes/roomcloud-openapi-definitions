@@ -1,0 +1,259 @@
+openapi: "3.1.0"
+info:
+  version: "1.2"
+  title: "Roomcloud Messaging API OpenApi definition"
+  description: "To obtain a JWT token, use the Authentication API"
+  x-last-updated: "2026-02-18"
+servers:
+  - url: "https://api.roomcloud.net"
+    description: "Production"
+  - url: "https://api-test-02.g.roomcloud.net"
+    description: "Development server"
+
+paths:
+  /be/api/messaging/{account_id}:
+    get:
+      summary: read messages
+      operationId: conversationsRead
+      description: It returns the list of conversations created/update within date_from and date_to<br> Only the last message is returned for each conversation n the list
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/conversation.yaml#/ConversationsListRS"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      tags:
+        - Messaging
+      security:
+        - JWTAuth: []
+  /be/api/messaging/{account_id}/{conversation_id}:
+    get:
+      summary: read messages
+      operationId: conversationRead
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/conversation.yaml#/ConversationRS"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      tags:
+        - Messaging
+      security:
+        - JWTAuth: []
+  /be/api/messaging/{account_id}/{conversation_id}/reply:
+    post:
+      summary: Reply to a conversation with a new message
+      operationId: replyMessage
+      tags:
+        - Messaging
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account identifier
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Conversation identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './schemas/conversation.yaml#/MessageReplyRequest'
+            examples:
+              simpleText:
+                summary: Text-only reply
+                value:
+                  message:
+                    text: "my text"
+              withAttachment:
+                summary: Text + single attachment (base64)
+                value:
+                  message:
+                    text: "my text"
+                    attachment:
+                      file_name: "my_file.png"
+                      file_content: "iVBORw0KGgoAAAANSUhEUgAA..."  # base64
+                      file_type: "image/png"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+      security:
+          - JWTAuth: []
+
+    
+components:
+  securitySchemes:
+    JWTAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+# Commons (Error, ErrorRS, Timestamp, Paging, Base Response Envelopes)
+    Error:
+      $ref: "./schemas/commons.yaml#/Error"
+
+    Timestamp:
+      $ref: "./schemas/commons.yaml#/Timestamp"
+
+    OpenApiPaging:
+      $ref: "./schemas/commons.yaml#/OpenApiPaging"
+
+    OpenApiResponseSuccessBase:
+      $ref: "./schemas/commons.yaml?r=1#/OpenApiResponseSuccessBase"
+
+    ResponseError:
+      $ref: "./schemas/commons.yaml#/ResponseError"
+
+    # Messaging – Oggetti di dominio
+    Conversation:
+      $ref: "./schemas/conversation.yaml#/Conversation"
+
+    ConversationList:
+      $ref: "./schemas/conversation.yaml#/ConversationList"
+
+    Message:
+      $ref: "./schemas/conversation.yaml#/Message"
+
+    Participant:
+      $ref: "./schemas/conversation.yaml#/Participant"
+
+    Attachment:
+      $ref: "./schemas/conversation.yaml#/Attachment"
+
+    Reservation:
+      $ref: "./schemas/conversation.yaml#/Reservation"
+
+    Unit:
+      $ref: "./schemas/conversation.yaml#/Unit"
+      components:
