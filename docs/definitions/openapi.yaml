@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Roomcloud OpenAPI Specification
-  version: "1.1"
+  version: "1.2"
   description: >
     Central OpenAPI entrypoint.
     Includes Messaging API and shared schemas (errors, base response envelope, pagination).

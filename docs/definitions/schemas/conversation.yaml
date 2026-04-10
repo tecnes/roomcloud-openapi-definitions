@@ -46,6 +46,8 @@ Message:
   properties:
     message_id:
       type: string
+    channel_message_id:
+      type: string
     creation_date:
       type: string
       format: date-time
@@ -59,7 +61,7 @@ Message:
       nullable: true
       items:
         $ref: '#/Attachment'
-  required: [message_id, creation_date, participant]
+  required: [message_id, channel_message_id,creation_date, participant]
   additionalProperties: false
 
 Participant:
