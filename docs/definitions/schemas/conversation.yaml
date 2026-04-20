@@ -185,4 +185,38 @@ SingleAttachment:
           enum:
             - image/png
             - image/jpeg
+            
+
+MessagingWebhookNotification:
+      type: object
+      required:
+        - event
+        - account_id
+        - conversation_id
+        - channel_id
+        - last_message
+      properties:
+        event:
+          type: string
+          enum:
+            - message.created
+          description: notified event type
+          example: message.created
+        account_id:
+          type: string
+          description: ID of the destination account
+          example: 12345
+        conversation_id:
+          type: string
+          description: Conversation ID
+          example: 98765
+        channel_id:
+          type: string
+          description: Channel ID
+          example: booking.com
+        last_message:
+          allOf:
+            - $ref: '#/components/schemas/Message'
+          description: Last message associated to the conversation at the event moment
+        
 
