@@ -1,9 +1,9 @@
 openapi: "3.1.0"
 info:
-  version: "1.2"
+  version: "1.2.1"
   title: "Roomcloud Messaging API OpenApi definition"
   description: "To obtain a JWT token, use the Authentication API"
-  x-last-updated: "2026-02-18"
+  x-last-updated: "2026-04-20"
 servers:
   - url: "https://api.roomcloud.net"
     description: "Production"
@@ -210,8 +210,50 @@ paths:
                 $ref: "./schemas/commons.yaml#/ResponseError"
       security:
           - JWTAuth: []
+  /webhooks/messaging-events:
+    post:
+      tags:
+        - Messaging Webhooks
+      summary: Messaging event notification
+      description: >
+        Endpoint invoked by Roomcloud to deliver messaging event notifications to the registered external application
+      operationId: receiveMessagingEvent
+      
+      parameters:
+        - name: Transaction-Id
+          in: header
+          required: true
+          description: >
+            Unique identifier of the webhook call, useful for tracing and
+            idempotency handling.
+          schema:
+            type: string
+          example: txn_8f3b2c1e
 
-    
+        - name: X-Roomcloud-Signature
+          in: header
+          required: false
+          description: >
+            Signature used to authenticate the webhook call.
+            It contains a shared secret or API key that can be used to
+            verify that the request originates from Roomcloud.
+          schema:
+            type: string
+          example: 4f7a9c1e2d...
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessagingWebhookNotification'
+      responses:
+        '200':
+          description: Webhook correclty rreceived
+        '400':
+          description: Not valid Payload
+        '500':
+          description: Internal Error
 components:
   securitySchemes:
     JWTAuth:
