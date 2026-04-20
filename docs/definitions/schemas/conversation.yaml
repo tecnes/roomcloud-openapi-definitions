@@ -108,11 +108,11 @@ Reservation:
 Unit:
   type: object
   properties:
-    unit_id:
+    channel_unit_id:
       type: string
-    unit_name:
+    channel_unit_name:
       type: string
-  required: [unit_id, unit_name]
+  required: [channel_unit_id, channel_unit_name]
   additionalProperties: false
 
 # -------- Envelope CONCRETO per Messaging (success) --------
