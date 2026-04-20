@@ -54,6 +54,9 @@ Message:
     text:
       type: string
       nullable: true
+    tag:
+      type: string
+      nullable: true
     participant:
       $ref: '#/Participant'
     attachments:
@@ -89,6 +92,8 @@ Reservation:
   type: object
   properties:
     reservation_id:
+      type: string
+    crs_id:
       type: string
     checkin:
       type: string
