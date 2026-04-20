@@ -5,7 +5,7 @@ info:
   description: "To obtain a JWT token, use the Authentication API"
   x-last-updated: "2026-04-20"
 servers:
-  - url: "https://api.roomcloud.net"
+  - url: "https://openapi.g.roomcloud.net"
     description: "Production"
   - url: "https://api-test-02.g.roomcloud.net"
     description: "Development server"
@@ -246,7 +246,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MessagingWebhookNotification'
+              $ref: './schemas/conversation.yaml#/MessagingWebhookNotification'
       responses:
         '200':
           description: Webhook correclty rreceived
