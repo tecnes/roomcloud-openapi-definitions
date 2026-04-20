@@ -216,7 +216,7 @@ MessagingWebhookNotification:
           example: booking.com
         last_message:
           allOf:
-            - $ref: '#/components/schemas/Message'
+            - $ref: '#/Message'
           description: Last message associated to the conversation at the event moment
         
 
