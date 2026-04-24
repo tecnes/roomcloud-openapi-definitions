@@ -80,7 +80,6 @@ paths:
               properties:
                 CLIENT_SECRET_CURRENT:
                   type: string
-                  required: true
                 CLIENT_SECRET_NEW:
                   type: string
                   minLength: 12 
