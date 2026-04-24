@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Roomcloud OpenAPI Specification
-  version: "1.2.1"
+  version: "1.2.2"
   description: >
     Central OpenAPI entrypoint.
     Includes Messaging API and shared schemas (errors, base response envelope, pagination).
@@ -10,7 +10,7 @@ info:
 servers:
   - url: "https://openapi.g.roomcloud.net"
     description: Production
-  - url: "https://api-test-02.g.roomcloud.net"
+  - url: "https://apitest.roomcloud.net"
     description: Development
 
 paths:

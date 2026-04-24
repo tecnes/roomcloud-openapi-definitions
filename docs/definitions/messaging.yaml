@@ -1,13 +1,13 @@
 openapi: "3.1.0"
 info:
-  version: "1.2.1"
+  version: "1.2.2"
   title: "Roomcloud Messaging API OpenApi definition"
   description: "To obtain a JWT token, use the Authentication API"
-  x-last-updated: "2026-04-20"
+  x-last-updated: "2026-04-24"
 servers:
   - url: "https://openapi.g.roomcloud.net"
     description: "Production"
-  - url: "https://api-test-02.g.roomcloud.net"
+  - url: "https://apitest.roomcloud.net"
     description: "Development server"
 
 paths:

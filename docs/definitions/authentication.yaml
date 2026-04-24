@@ -1,12 +1,12 @@
 openapi: "3.1.0"
 info:
-  version: "1.1.1"
+  version: "1.1.2"
   title: "Roomcloud Authentication API OpenApi definition"
-  x-last-updated: "2026-02-20"
+  x-last-updated: "2026-02-24"
 servers:
   - url: "https://authentication.g.roomcloud.net"
     description: "Production"
-  - url: "https://api-test-02.g.roomcloud.net"
+  - url: "https://apitest.roomcloud.net"
     description: "Development server"
 
 paths:
