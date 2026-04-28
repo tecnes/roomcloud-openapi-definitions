@@ -1,9 +1,9 @@
 openapi: "3.1.0"
 info:
-  version: "1.2.2"
+  version: "1.2.3"
   title: "Roomcloud Messaging API OpenApi definition"
   description: "To obtain a JWT token, use the Authentication API"
-  x-last-updated: "2026-04-24"
+  x-last-updated: "2026-04-28"
 servers:
   - url: "https://openapi.g.roomcloud.net"
     description: "Production"
@@ -162,22 +162,30 @@ paths:
                 value:
                   message:
                     text: "my text"
+                    message_id: "ac35c6f4-37f3-4598-85c4-4cb9aff2fb67"
               withAttachment:
                 summary: Text + single attachment (base64)
                 value:
                   message:
                     text: "my text"
+                    message_id: "19bb75ce-87ce-4c27-a7c4-3d883a13667b"
                     attachment:
                       file_name: "my_file.png"
                       file_content: "iVBORw0KGgoAAAANSUhEUgAA..."  # base64
                       file_type: "image/png"
       responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/conversation.yaml#/MessageReplyRS"
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "./schemas/commons.yaml#/OpenApiResponseSuccessBase"
+                $ref: "./schemas/conversation.yaml#/MessageReplyRS"
         "400":
           description: Bad Request
           content:
@@ -202,6 +210,13 @@ paths:
             application/json:
               schema:
                 $ref: "./schemas/commons.yaml#/ResponseError"
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/commons.yaml#/ResponseError"
+                
         "500":
           description: Internal Server Error
           content:
