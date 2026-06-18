@@ -1,6 +1,6 @@
 openapi: "3.1.0"
 info:
-  version: "1.1.4"
+  version: "1.1.5"
   title: "Roomcloud Authentication API OpenApi definition"
   x-last-updated: "2026-02-24"
 servers:
