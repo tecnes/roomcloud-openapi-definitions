@@ -10,6 +10,72 @@ servers:
     description: "Development server"
 
 paths:
+  /oauth/token:
+    post:
+      summary: OAuth 2.0 Client Credentials Grant (RFC 6749 §4.4)
+      tags:
+      - JWT
+      description: >
+        Issues a signed JWT access token for a registered client.
+        Credentials can be supplied either as form body parameters (`client_id` / `client_secret`)
+        or via an `Authorization: Basic base64(client_id:client_secret)` header.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/oauth_token_request'
+      responses:
+        '200':
+          description: Access token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oauth_token_response'
+              examples:
+                success:
+                  value:
+                    access_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    token_type: Bearer
+                    expires_in: 900
+                    scope: read write
+        '400':
+          description: Invalid request or unsupported grant type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oauth_error_response'
+              examples:
+                unsupported_grant_type:
+                  value:
+                    error: unsupported_grant_type
+                    error_description: Only client_credentials grant type is supported
+                invalid_request:
+                  value:
+                    error: invalid_request
+                    error_description: Content-Type must be application/x-www-form-urlencoded
+        '401':
+          description: Client authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oauth_error_response'
+              examples:
+                invalid_client:
+                  value:
+                    error: invalid_client
+                    error_description: Client authentication failed
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oauth_error_response'
+              examples:
+                server_error:
+                  value:
+                    error: server_error
+                    error_description: An unexpected error occurred
 
   /authenticator/api/oauth/authenticate:
     post:
@@ -143,6 +209,41 @@ components:
       bearerFormat: JWT
 
   schemas:
+    oauth_token_request:
+      type: object
+      properties:
+        grant_type:
+          type: string
+          enum:
+          - client_credentials
+        client_id:
+          type: string
+        client_secret:
+          type: string
+      required:
+      - grant_type
+    oauth_token_response:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Seconds until the token expires
+          example: 900
+        scope:
+          type: string
+          description: Space-separated list of granted scopes
+    oauth_error_response:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
 # Commons (Error, ErrorRS, Timestamp, Paging, Base Response Envelopes)
     Error:
       $ref: "./schemas/commons.yaml#/Error"
