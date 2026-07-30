@@ -1,8 +1,8 @@
 openapi: "3.1.0"
 info:
-  version: "1.1.4"
+  version: "1.1.5"
   title: "Roomcloud Authentication API OpenApi definition"
-  x-last-updated: "2026-02-24"
+  x-last-updated: "2026-07-30"
 servers:
   - url: "https://authenticator.g.roomcloud.net"
     description: "Production"
@@ -10,8 +10,7 @@ servers:
     description: "Development server"
 
 paths:
-
-  /authenticator/api/oauth/authenticate:
+  /authenticator/oauth/token:
     post:
       summary: when sucesfully authenticated, the response contains a JWT token to be used as a Bearer token in the Authorization header for all API requests.
       requestBody:
