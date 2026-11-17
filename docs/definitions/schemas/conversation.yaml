@@ -34,10 +34,21 @@ Conversation:
     start_date:
       type: string
       format: date-time
+    last_message_date:
+      type: string
+      format: date-time
     messages:
       type: array
       items:
         $ref: '#/Message'
+    participants:
+      type: array
+      description: >
+        Participants of the conversation, with their role.
+        To know who wrote a message, match Message.participant.participant_id
+        with the participant_id of this list.
+      items:
+        $ref: '#/Participant'
   required: [conversation_id, channel_id]
   additionalProperties: false
 
@@ -57,6 +68,8 @@ Message:
     tag:
       type: string
       nullable: true
+      enum: [read, delivered, no_reply_needed]
+      description: Message status. Currently only "read" is returned.
     participant:
       $ref: '#/Participant'
     attachments:
@@ -69,8 +82,25 @@ Message:
 
 Participant:
   type: object
+  description: >
+    Inside Message.participant only participant_id is returned;
+    the other fields are returned in Conversation.participants.
   properties:
     participant_id:
+      type: string
+    role:
+      type: string
+      enum: [owner, guest]
+      description: >
+        owner = the property (messages sent from the channel extranet, the Roomcloud extranet
+        or the reply API), guest = the traveller.
+    first_name:
+      type: string
+    last_name:
+      type: string
+    location:
+      type: string
+    lang:
       type: string
   required: [participant_id]
   additionalProperties: false
